@@ -1,4 +1,4 @@
-import { AudioPlayer, VoiceConnection } from '@discordjs/voice'
+import { AudioPlayer, AudioPlayerStatus, VoiceConnection } from '@discordjs/voice'
 import Queue from '../util/Queue'
 import AudioResourceClient from '../util/AudioResourceClient'
 import { Song, SongRequest } from '../types'
@@ -11,6 +11,18 @@ export default class MusicPlayer {
 
   constructor() {
     this.audioPlayer = new AudioPlayer({ debug: true })
+    this.audioPlayer.on('stateChange', (oldState, newState) => {
+      const currentlyIdle = newState.status === AudioPlayerStatus.Idle
+      const wasPlaying = oldState.status === AudioPlayerStatus.Playing
+
+      if (!(currentlyIdle && wasPlaying)) {
+        return
+      }
+
+      if (!this.queue.isEmpty()) {
+        this.skip()
+      }
+    })
   }
 
   public async play(): Promise<Song> {
