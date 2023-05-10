@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon app.ts"
+    "dev": "nodemon app.ts",
+    "start": "node app.js",
+    "build": "tsc",
+    "update:commands": "ts-node ./commands.ts"
   },
   "author": "",
   "license": "ISC",

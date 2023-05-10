@@ -1,7 +1,6 @@
 import play, { YouTubeVideo } from 'play-dl'
 import dotenv from 'dotenv'
 import { AudioResource, createAudioResource } from '@discordjs/voice'
-import { Song, SongRequest } from '../types'
 
 dotenv.config()
 
