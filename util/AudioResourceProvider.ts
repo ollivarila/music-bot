@@ -4,7 +4,7 @@ import { AudioResource, createAudioResource } from '@discordjs/voice'
 
 dotenv.config()
 
-export default class AudioResourceClient {
+export default class AudioResourceProvider {
   constructor() {
     // this.init()
   }

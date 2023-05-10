@@ -112,8 +112,12 @@ export default class InteractionHandler {
       await this.handleJoin(interaction, true)
     }
     const query = interaction.options.getString('song', true)
-    const details = await this.player.enqueue({ query, username: interaction.user.username })
-    interaction.reply({ embeds: [this.embedFactory.enqueueEmbed(details)] })
+    try {
+      const details = await this.player.enqueue({ query, username: interaction.user.username })
+      interaction.reply({ embeds: [this.embedFactory.enqueueEmbed(details)] })
+    } catch (error: any) {
+      this.errorReply(interaction, error.message)
+    }
   }
 
   private async handleJoin(

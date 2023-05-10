@@ -14,8 +14,8 @@ jobs:
         uses: actions/checkout@v3
       - name: Setup node
         uses: actions/setup-node@v3
-      - name: npm install
-        run: npm install
+      - name: Install dependencies
+        run: npm install && npm install ts-node
       - name: 'Update commands'
         run: 'npm run update:commands'
         env:

@@ -1,12 +1,12 @@
 import { AudioPlayer, AudioPlayerStatus, VoiceConnection } from '@discordjs/voice'
 import Queue from '../util/Queue'
-import AudioResourceClient from '../util/AudioResourceClient'
+import AudioResourceProvider from '../util/AudioResourceProvider'
 import { Song, SongRequest } from '../types'
 
 export default class MusicPlayer {
   private readonly audioPlayer: AudioPlayer
   private readonly queue: Queue<Song> = new Queue<Song>()
-  private readonly audioResourceClient = new AudioResourceClient()
+  private readonly audioResourceClient = new AudioResourceProvider()
   private playing: boolean = false
 
   constructor() {
@@ -21,6 +21,8 @@ export default class MusicPlayer {
 
       if (!this.queue.isEmpty()) {
         this.skip()
+      } else {
+        this.playing = false
       }
     })
   }
