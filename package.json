@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon app.ts",
-    "start": "node app.js",
+    "start": "node build/app.js",
     "build": "tsc -b",
     "update:commands": "ts-node ./commands.ts"
   },
