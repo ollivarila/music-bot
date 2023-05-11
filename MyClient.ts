@@ -81,7 +81,6 @@ export default class MyClient extends Client {
     for (const file of files) {
       const filePath = path.join(handlersPath, file)
       const handler = require(filePath) as MessageComponentHandler
-      console.log(handler)
       if ('customId' in handler && 'execute' in handler) {
         this.componentHandlers.set(handler.customId, handler)
       } else {
