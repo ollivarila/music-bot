@@ -1,4 +1,6 @@
+import { MessageComponentInteraction } from 'discord.js'
 import { MessageComponentHandler } from '../MyClient'
+import { getVoiceConnection } from '@discordjs/voice'
 
 const select: MessageComponentHandler = {
   customId: 'select',
@@ -20,6 +22,12 @@ const select: MessageComponentHandler = {
       search?.origin.deleteReply()
       interaction.followUp({ embeds: [embed], ephemeral: false })
       context.active_searches.delete(username)
+      if (!inVoice(interaction)) {
+        interaction.followUp({
+          content: "Join a voice channel and use '/join' to play",
+          ephemeral: true,
+        })
+      }
     } catch (error: any) {
       search?.origin.deleteReply()
       context.active_searches.delete(username)
@@ -27,6 +35,10 @@ const select: MessageComponentHandler = {
       interaction.editReply({ embeds: [embed] })
     }
   },
+}
+
+function inVoice(interaction: MessageComponentInteraction): boolean {
+  return getVoiceConnection(interaction.guildId!) !== null
 }
 
 module.exports = select

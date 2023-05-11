@@ -1,10 +1,8 @@
 import { ChatInputCommandInteraction, Collection, MessageComponentInteraction } from 'discord.js'
 import MusicPlayer from './MusicPlayer'
 import { EmbedFactory } from '../util/EmbedFactory'
-import { Context, MusicBotCommand, Search } from '../types'
+import { Context, MusicBotCommand, Search, Username } from '../types'
 import MyClient, { MessageComponentHandler } from '../MyClient'
-
-type Username = string
 
 export default class InteractionHandler {
   private readonly client: MyClient
@@ -13,9 +11,11 @@ export default class InteractionHandler {
     factory: new EmbedFactory(),
     active_searches: new Collection<Username, Search>(),
   }
+  private readonly FIFTEEN_MINUTES: number = 15 * 60 * 1000
 
   constructor(client: MyClient) {
     this.client = client
+    setInterval(this.clearOldSearches, this.FIFTEEN_MINUTES)
   }
 
   async chatInputCommand(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -74,5 +74,19 @@ export default class InteractionHandler {
         interaction.reply({ embeds: [embed], ephemeral: true })
       }
     }
+  }
+
+  private clearOldSearches(): void {
+    this.context.active_searches.forEach((search, username) => {
+      if (this.searchIsExpired(search)) {
+        this.context.active_searches.delete(username)
+      }
+    })
+  }
+
+  private searchIsExpired(search: Search): boolean {
+    const now = Date.now()
+    const diff = now - search.updatedAt
+    return diff > this.FIFTEEN_MINUTES
   }
 }

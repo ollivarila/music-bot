@@ -16,16 +16,18 @@ export type SongRequest = {
 export type Context = {
   player: MusicPlayer
   factory: EmbedFactory
-  active_searches: Map<string, Search>
+  active_searches: Map<Username, Search>
 }
 
 export type Search = {
   query: string
   results: YouTubeVideo[]
-  updatedAt?: number
+  updatedAt: number
   origin: ChatInputCommandInteraction
   index: number
 }
+
+export type Username = string
 
 export type MusicBotCommand = {
   data: SlashCommandBuilder
