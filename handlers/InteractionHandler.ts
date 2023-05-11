@@ -11,11 +11,12 @@ export default class InteractionHandler {
     factory: new EmbedFactory(),
     active_searches: new Collection<Username, Search>(),
   }
-  private readonly FIFTEEN_MINUTES: number = 15 * 60 * 1000
 
   constructor(client: MyClient) {
     this.client = client
-    setInterval(this.clearOldSearches, this.FIFTEEN_MINUTES)
+    const searches = this.context.active_searches as Collection<Username, Search>
+    const FIFTEEN_MINUTES = 15 * 60 * 1000
+    setInterval(() => clearOldSearches(searches), FIFTEEN_MINUTES)
   }
 
   async chatInputCommand(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -75,18 +76,18 @@ export default class InteractionHandler {
       }
     }
   }
+}
 
-  private clearOldSearches(): void {
-    this.context.active_searches.forEach((search, username) => {
-      if (this.searchIsExpired(search)) {
-        this.context.active_searches.delete(username)
-      }
-    })
-  }
+function clearOldSearches(searches: Collection<Username, Search>): void {
+  searches.forEach((search, username) => {
+    if (searchIsExpired(search)) {
+      searches.delete(username)
+    }
+  })
+}
 
-  private searchIsExpired(search: Search): boolean {
-    const now = Date.now()
-    const diff = now - search.updatedAt
-    return diff > this.FIFTEEN_MINUTES
-  }
+function searchIsExpired(search: Search): boolean {
+  const now = Date.now()
+  const diff = now - search.updatedAt
+  return diff > 60 * 1000 * 15
 }

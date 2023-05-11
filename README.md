@@ -6,3 +6,9 @@
 TOKEN
 CLIENT_ID
 ```
+
+## TODOS
+
+- some testing
+- track visualizer
+- rich status
