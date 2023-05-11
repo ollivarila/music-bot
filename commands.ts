@@ -36,7 +36,6 @@ function loadUpThatPlate(): SlashCommandBuilder[] {
   for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file)
     const command = require(filePath) as MusicBotCommand
-    console.log(command)
     if ('data' in command) {
       commands.push(command.data)
     } else {

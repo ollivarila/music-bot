@@ -1,5 +1,13 @@
-import { EmbedBuilder } from 'discord.js'
+import {
+  APIActionRowComponent,
+  APIMessageActionRowComponent,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+} from 'discord.js'
 import { Song } from '../types'
+import { YouTubeVideo } from 'play-dl'
 
 export class EmbedFactory {
   constructor() {}
@@ -108,4 +116,34 @@ export class EmbedFactory {
     const videoId = url.split('v=')[1].split('&')[0]
     return `http://i3.ytimg.com/vi/${videoId}/hqdefault.jpg`
   }
+
+  public componentEmbed(video: YouTubeVideo): ComponentEmbed {
+    const embed = this.baseEmbed()
+      .setTitle('Song')
+      .setDescription(`🎵 - ${video.title} - 🎵`)
+      .setThumbnail(this.parseThumbnailUrl(video.url))
+      .setFields([
+        {
+          name: 'Duration',
+          value: this.parseDuration(video.durationInSec),
+        },
+      ])
+    const component = new ActionRowBuilder()
+      .addComponents(
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Primary)
+          .setLabel('Previous')
+          .setCustomId('previous'),
+        new ButtonBuilder().setStyle(ButtonStyle.Primary).setLabel('Next').setCustomId('next'),
+        new ButtonBuilder().setStyle(ButtonStyle.Success).setLabel('Select').setCustomId('select'),
+      )
+      .toJSON() as APIActionRowComponent<APIMessageActionRowComponent>
+
+    return { embed, component }
+  }
+}
+
+export type ComponentEmbed = {
+  embed: EmbedBuilder
+  component: APIActionRowComponent<APIMessageActionRowComponent>
 }

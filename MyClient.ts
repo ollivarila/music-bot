@@ -1,15 +1,21 @@
-import { Client, Collection, GatewayIntentBits } from 'discord.js'
+import { Client, Collection, GatewayIntentBits, MessageComponentInteraction } from 'discord.js'
 import InteractionHandler from './handlers/InteractionHandler'
 import dotenv from 'dotenv'
-import { MusicBotCommand } from './types'
+import { Context, MusicBotCommand } from './types'
 import path from 'path'
 import fs from 'fs'
 
 dotenv.config()
 
+export type MessageComponentHandler = {
+  customId: string
+  execute: (interaction: MessageComponentInteraction, context: Context) => Promise<void>
+}
+
 export default class MyClient extends Client {
   private readonly handler: InteractionHandler
   public commands: Collection<string, MusicBotCommand> = new Collection()
+  public componentHandlers: Collection<string, MessageComponentHandler> = new Collection()
 
   constructor() {
     const intents: number[] = [
@@ -33,8 +39,13 @@ export default class MyClient extends Client {
       if (interaction.isChatInputCommand()) {
         this.handler.chatInputCommand(interaction)
       }
+
+      if (interaction.isMessageComponent()) {
+        this.handler.messageComponent(interaction)
+      }
     })
     this.loadCommands()
+    this.loadComponentHandlers()
   }
 
   private loadCommands(): void {
@@ -58,6 +69,29 @@ export default class MyClient extends Client {
       }
     }
     console.log('Commands loaded successfully')
+  }
+
+  private loadComponentHandlers(): void {
+    this.componentHandlers = new Collection()
+    const handlersPath = path.join(__dirname, 'componentHandlers')
+    const files = fs
+      .readdirSync(handlersPath)
+      .filter((file) => file.endsWith('.ts') || file.endsWith('.js'))
+
+    for (const file of files) {
+      const filePath = path.join(handlersPath, file)
+      const handler = require(filePath) as MessageComponentHandler
+      console.log(handler)
+      if ('customId' in handler && 'execute' in handler) {
+        this.componentHandlers.set(handler.customId, handler)
+      } else {
+        console.log(
+          `[WARNING] The command at ${filePath} is missing a required "customId" or "execute" property.`,
+        )
+        throw new Error('Handler loading failed')
+      }
+    }
+    console.log('Handlers loaded successfully')
   }
 
   public start(): void {

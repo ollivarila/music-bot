@@ -26,16 +26,16 @@ export default class AudioResourceProvider {
     })
   }
 
-  public async searchYoutube(query: string): Promise<YouTubeVideo> {
+  public async searchYoutube(query: string, resultLimit: number = 1): Promise<YouTubeVideo[]> {
     if (query.startsWith('https://')) {
       const info = await play.video_basic_info(query)
-      return info.video_details
+      return [info.video_details]
     }
-    const searched = await play.search(query, { limit: 1, source: { youtube: 'video' } })
+    const searched = await play.search(query, { limit: resultLimit, source: { youtube: 'video' } })
     if (searched.length === 0) {
       throw new Error('No results found')
     }
-    return searched[0]
+    return searched
   }
 
   public async generateAudioResource(url: string): Promise<AudioResource> {

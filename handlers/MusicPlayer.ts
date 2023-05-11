@@ -2,6 +2,7 @@ import { AudioPlayer, AudioPlayerStatus, VoiceConnection } from '@discordjs/voic
 import Queue from '../util/Queue'
 import AudioResourceProvider from '../util/AudioResourceProvider'
 import { Song, SongRequest } from '../types'
+import { YouTubeVideo } from 'play-dl'
 
 export default class MusicPlayer {
   private readonly audioPlayer: AudioPlayer
@@ -108,7 +109,7 @@ export default class MusicPlayer {
    * @throws Error if no results were found for the query
    */
   private async generateSong(request: SongRequest): Promise<Song> {
-    const details = await this.audioResourceClient.searchYoutube(request.query)
+    const details = (await this.audioResourceClient.searchYoutube(request.query))[0]
     return {
       details,
       username: request.username,
@@ -129,5 +130,9 @@ export default class MusicPlayer {
    */
   public getCurrentSong(): Song | undefined {
     return this.currentSong
+  }
+
+  public async search(query: string): Promise<YouTubeVideo[]> {
+    return this.audioResourceClient.searchYoutube(query, 5)
   }
 }
