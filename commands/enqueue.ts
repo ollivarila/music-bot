@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from 'discord.js'
-import { MusicBotCommand, SongRequest } from '../types'
+import { MusicBotCommand } from '../types'
 
 const enqueue: MusicBotCommand = {
   data: new SlashCommandBuilder()

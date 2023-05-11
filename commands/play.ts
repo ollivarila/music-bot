@@ -1,8 +1,4 @@
-import {
-  SlashCommandBuilder,
-  SlashCommandOptionsOnlyBuilder,
-  SlashCommandStringOption,
-} from 'discord.js'
+import { SlashCommandBuilder, SlashCommandStringOption } from 'discord.js'
 import { MusicBotCommand } from '../types'
 import { getVoiceConnection } from '@discordjs/voice'
 import joinVoice from '../util/joinVoice'

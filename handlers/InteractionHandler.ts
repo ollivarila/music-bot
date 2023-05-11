@@ -1,8 +1,7 @@
-import { ChatInputCommandInteraction, Client, EmbedBuilder, GuildMember } from 'discord.js'
-import { joinVoiceChannel, getVoiceConnection } from '@discordjs/voice'
+import { ChatInputCommandInteraction } from 'discord.js'
 import MusicPlayer from './MusicPlayer'
 import { EmbedFactory } from '../util/EmbedFactory'
-import { Context, Song, SongRequest } from '../types'
+import { Context } from '../types'
 import MyClient from '../MyClient'
 
 export default class InteractionHandler {

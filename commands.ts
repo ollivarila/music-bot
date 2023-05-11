@@ -1,10 +1,4 @@
-import {
-  ApplicationCommandOption,
-  REST,
-  Routes,
-  ApplicationCommandOptionType,
-  SlashCommandBuilder,
-} from 'discord.js'
+import { REST, Routes, SlashCommandBuilder } from 'discord.js'
 import dotenv from 'dotenv'
 import fs from 'fs'
 import path from 'path'
