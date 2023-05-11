@@ -21,6 +21,7 @@ jobs:
         env:
           NODE_ENV: production
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          TOKEN: ${{ secrets.TOKEN }}
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
