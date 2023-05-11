@@ -8,6 +8,7 @@ export default class MusicPlayer {
   private readonly queue: Queue<Song> = new Queue<Song>()
   private readonly audioResourceClient = new AudioResourceProvider()
   private playing: boolean = false
+  private currentSong?: Song
 
   constructor() {
     this.audioPlayer = new AudioPlayer({ debug: true })
@@ -58,7 +59,9 @@ export default class MusicPlayer {
    */
   public async skip(): Promise<Song> {
     const next = this.queue.dequeue()
+    this.currentSong = next
     if (!next) {
+      this.playing = false
       throw new Error('Queue is empty')
     }
     const stream = await this.audioResourceClient.generateAudioResource(next.details.url)
@@ -118,5 +121,13 @@ export default class MusicPlayer {
    */
   public getQueue(): Song[] {
     return this.queue.getQueue()
+  }
+
+  /**
+   * Get the current song
+   * @returns The current song
+   */
+  public getCurrentSong(): Song | undefined {
+    return this.currentSong
   }
 }

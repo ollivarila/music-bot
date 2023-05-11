@@ -1,85 +1,58 @@
-import { ApplicationCommandOption, REST, Routes, ApplicationCommandOptionType } from 'discord.js'
+import {
+  ApplicationCommandOption,
+  REST,
+  Routes,
+  ApplicationCommandOptionType,
+  SlashCommandBuilder,
+} from 'discord.js'
 import dotenv from 'dotenv'
+import fs from 'fs'
+import path from 'path'
+import { MusicBotCommand } from './types'
 
 dotenv.config()
-
-type Command = {
-  name: string
-  description: string
-  options?: ApplicationCommandOption[]
-}
-
-const commands: Command[] = [
-  {
-    name: 'join',
-    description: 'Join a voice channel',
-  },
-  {
-    name: 'leave',
-    description: 'Leave a voice channel',
-  },
-  {
-    name: 'play',
-    description: 'Play a song, adds song to queue if already playing',
-    options: [
-      {
-        name: 'song',
-        description: 'The song to play',
-        type: ApplicationCommandOptionType.String,
-        required: true,
-      },
-    ],
-  },
-  {
-    name: 'pause',
-    description: 'Pause the current song',
-  },
-  {
-    name: 'unpause',
-    description: 'Resume the current song',
-  },
-  {
-    name: 'skip',
-    description: 'Skip the current song',
-  },
-  {
-    name: 'stop',
-    description: 'Stop the current song',
-  },
-  {
-    name: 'queue',
-    description: 'Show the current queue',
-  },
-  {
-    name: 'clear',
-    description: 'Clear the current queue',
-  },
-  {
-    name: 'enqueue',
-    description: 'Add a song to the queue',
-    options: [
-      {
-        name: 'song',
-        description: 'The song to add',
-        type: ApplicationCommandOptionType.String,
-        required: true,
-      },
-    ],
-  },
-]
 
 const rest = new REST({ version: '10' }).setToken(process.env.TOKEN!)
 
 async function update(): Promise<void> {
+  await fromCommandsFolder()
+}
+
+async function fromCommandsFolder(): Promise<void> {
   try {
-    console.log('Started refreshing application (/) commands.')
+    console.log('Started refreshing application (/) commands from commands folder.')
 
-    await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), { body: commands })
+    const cmds = loadUpThatPlate()
 
-    console.log('Successfully reloaded application (/) commands.')
+    await rest.put(Routes.applicationCommands(process.env.CLIENT_ID!), { body: cmds })
+
+    console.log('Successfully reloaded application (/) commands from commands folder.')
   } catch (error) {
     console.error(error)
   }
+}
+
+function loadUpThatPlate(): SlashCommandBuilder[] {
+  const commands = [] as SlashCommandBuilder[]
+  const commandsPath = path.join(__dirname, 'commands')
+  const commandFiles = fs
+    .readdirSync(commandsPath)
+    .filter((file) => file.endsWith('.ts') || file.endsWith('.js'))
+
+  for (const file of commandFiles) {
+    const filePath = path.join(commandsPath, file)
+    const command = require(filePath) as MusicBotCommand
+    console.log(command)
+    if ('data' in command) {
+      commands.push(command.data)
+    } else {
+      console.log(
+        `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`,
+      )
+      throw new Error('Missing data or execute property')
+    }
+  }
+  return commands
 }
 
 update()

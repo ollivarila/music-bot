@@ -100,6 +100,10 @@ export class EmbedFactory {
     return this.songEmbed(request).setTitle('Unpaused -- Now Playing')
   }
 
+  public queueEmptyEmbed(): EmbedBuilder {
+    return this.infoEmbed('Queue Empty', "Try adding some songs with '/enqueue'")
+  }
+
   private parseThumbnailUrl(url: string): string {
     const videoId = url.split('v=')[1].split('&')[0]
     return `http://i3.ytimg.com/vi/${videoId}/hqdefault.jpg`
