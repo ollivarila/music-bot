@@ -1,9 +1,14 @@
-import { AudioPlayer, AudioPlayerStatus, VoiceConnection } from '@discordjs/voice'
+import {
+  AudioPlayer,
+  AudioPlayerStatus,
+  VoiceConnection,
+  getVoiceConnections,
+} from '@discordjs/voice'
 import Queue from '../util/Queue'
 import AudioResourceProvider from '../util/AudioResourceProvider'
 import { Song, SongRequest } from '../types'
 import { YouTubeVideo } from 'play-dl'
-import { ActivityType, ClientPresence, PresenceData, PresenceUpdateStatus } from 'discord.js'
+import { ActivityType, PresenceUpdateStatus } from 'discord.js'
 import MyClient from '../MyClient'
 
 export default class MusicPlayer {
@@ -17,10 +22,25 @@ export default class MusicPlayer {
   constructor(client: MyClient) {
     this.client = client
     this.audioPlayer = new AudioPlayer({ debug: true })
+
+    const delay = 60 * 1000 * 10
+    this.audioPlayer.on('subscribe', (subscription) => {
+      const con = subscription.connection
+      const checkIdle = () => {
+        if (!this.playing) {
+          console.log('Not playing anything anymore, destroying connection')
+          con.destroy()
+        } else {
+          setTimeout(checkIdle, delay)
+        }
+      }
+
+      setTimeout(checkIdle, delay)
+    })
     this.audioPlayer.on('stateChange', (oldState, newState) => {
       const currentlyIdle = newState.status === AudioPlayerStatus.Idle
       const wasPlaying = oldState.status === AudioPlayerStatus.Playing
-      console.log(`${oldState.status} -> ${newState.status}`)
+      // console.log(`${oldState.status} -> ${newState.status}`)
 
       if (currentlyIdle) {
         this.client.changePresence({
@@ -33,7 +53,7 @@ export default class MusicPlayer {
           afk: false,
           status: PresenceUpdateStatus.Online,
         })
-      } else if (newState && newState.status === AudioPlayerStatus.Playing) {
+      } else if (newState.status === AudioPlayerStatus.Playing) {
         this.client.changePresence({
           activities: [
             {
