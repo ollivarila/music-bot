@@ -6,17 +6,15 @@ import MyClient, { MessageComponentHandler } from '../MyClient'
 
 export default class InteractionHandler {
   private readonly client: MyClient
-  private readonly context: Context = {
-    player: new MusicPlayer(),
-    factory: new EmbedFactory(),
-    active_searches: new Collection<Username, Search>(),
-  }
+  private readonly context: Context
 
   constructor(client: MyClient) {
     this.client = client
-    const searches = this.context.active_searches as Collection<Username, Search>
-    const FIFTEEN_MINUTES = 15 * 60 * 1000
-    setInterval(() => clearOldSearches(searches), FIFTEEN_MINUTES)
+    this.context = {
+      active_searches: new Collection<Username, Search>(),
+      factory: new EmbedFactory(),
+      player: new MusicPlayer(client),
+    }
   }
 
   async chatInputCommand(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -76,18 +74,4 @@ export default class InteractionHandler {
       }
     }
   }
-}
-
-function clearOldSearches(searches: Collection<Username, Search>): void {
-  searches.forEach((search, username) => {
-    if (searchIsExpired(search)) {
-      searches.delete(username)
-    }
-  })
-}
-
-function searchIsExpired(search: Search): boolean {
-  const now = Date.now()
-  const diff = now - search.updatedAt
-  return diff > 60 * 1000 * 15
 }

@@ -3,22 +3,51 @@ import Queue from '../util/Queue'
 import AudioResourceProvider from '../util/AudioResourceProvider'
 import { Song, SongRequest } from '../types'
 import { YouTubeVideo } from 'play-dl'
+import { ActivityType, ClientPresence, PresenceData, PresenceUpdateStatus } from 'discord.js'
+import MyClient from '../MyClient'
 
 export default class MusicPlayer {
   private readonly audioPlayer: AudioPlayer
   private readonly queue: Queue<Song> = new Queue<Song>()
   private readonly audioResourceClient = new AudioResourceProvider()
+  private readonly client: MyClient
   private playing: boolean = false
   private currentSong?: Song
 
-  constructor() {
+  constructor(client: MyClient) {
+    this.client = client
     this.audioPlayer = new AudioPlayer({ debug: true })
     this.audioPlayer.on('stateChange', (oldState, newState) => {
       const currentlyIdle = newState.status === AudioPlayerStatus.Idle
       const wasPlaying = oldState.status === AudioPlayerStatus.Playing
+      console.log(`${oldState.status} -> ${newState.status}`)
 
-      // If the player is not idle and was not playing, don't know what to do so do nothing
-      if (!(currentlyIdle && wasPlaying)) {
+      if (currentlyIdle) {
+        this.client.changePresence({
+          activities: [
+            {
+              name: 'your requests!',
+              type: ActivityType.Listening,
+            },
+          ],
+          afk: false,
+          status: PresenceUpdateStatus.Online,
+        })
+      } else if (newState && newState.status === AudioPlayerStatus.Playing) {
+        this.client.changePresence({
+          activities: [
+            {
+              name: this.currentSong?.details.title || 'music!',
+              type: ActivityType.Streaming,
+            },
+          ],
+          afk: false,
+          status: PresenceUpdateStatus.Online,
+        })
+      }
+
+      const autopaused = newState.status === AudioPlayerStatus.AutoPaused
+      if (!(currentlyIdle && wasPlaying) || autopaused) {
         return
       }
 
@@ -35,14 +64,9 @@ export default class MusicPlayer {
   /**
    * Plays the next song in the queue, if nothing is playing
    * @returns The song that just started playing
-   * @throws Error if the queue is empty or if something is already playing
    */
   public async play(): Promise<Song> {
-    if (this.playing) {
-      throw new Error('Already playing')
-    }
-    this.playing = true
-    return this.skip()
+    return this.playing ? this.currentSong! : this.skip()
   }
 
   /**
@@ -66,6 +90,11 @@ export default class MusicPlayer {
       throw new Error('Queue is empty')
     }
     const stream = await this.audioResourceClient.generateAudioResource(next.details.url)
+    if (!stream) {
+      console.error('Stream generation failed')
+      return this.skip()
+    }
+    this.playing = true
     this.audioPlayer.play(stream)
     return next
   }

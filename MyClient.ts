@@ -1,7 +1,15 @@
-import { Client, Collection, GatewayIntentBits, MessageComponentInteraction } from 'discord.js'
+import {
+  Client,
+  Collection,
+  GatewayIntentBits,
+  MessageComponentInteraction,
+  ActivityType,
+  PresenceUpdateStatus,
+  PresenceData,
+} from 'discord.js'
 import InteractionHandler from './handlers/InteractionHandler'
 import dotenv from 'dotenv'
-import { Context, MusicBotCommand } from './types'
+import { Context, MusicBotCommand, Song } from './types'
 import path from 'path'
 import fs from 'fs'
 
@@ -13,7 +21,7 @@ export type MessageComponentHandler = {
 }
 
 export default class MyClient extends Client {
-  private readonly handler: InteractionHandler
+  private handler!: InteractionHandler
   public commands: Collection<string, MusicBotCommand> = new Collection()
   public componentHandlers: Collection<string, MessageComponentHandler> = new Collection()
 
@@ -24,15 +32,51 @@ export default class MyClient extends Client {
       GatewayIntentBits.GuildVoiceStates,
     ]
     super({ intents })
-
-    this.handler = new InteractionHandler(this)
-
     this.init()
   }
 
   private init(): void {
     this.on('ready', () => {
-      console.log('Ready')
+      this.user?.setPresence({
+        activities: [
+          {
+            name: 'your requests!',
+            type: ActivityType.Listening,
+          },
+        ],
+        afk: false,
+        status: PresenceUpdateStatus.Online,
+      })
+
+      this.on('newSong', (song: Song) => {
+        if (!song) {
+          console.log('No song found')
+          this.user?.setPresence({
+            activities: [
+              {
+                name: 'your requests!',
+                type: ActivityType.Listening,
+              },
+            ],
+            afk: false,
+            status: PresenceUpdateStatus.Online,
+          })
+          return
+        }
+        console.log('Song found')
+        this.user?.setPresence({
+          activities: [
+            {
+              name: song.details.title || 'music!',
+              type: ActivityType.Streaming,
+            },
+          ],
+          afk: false,
+          status: PresenceUpdateStatus.Online,
+        })
+      })
+      this.handler = new InteractionHandler(this)
+      console.log('Ready!')
     })
 
     this.on('interactionCreate', async (interaction) => {
@@ -46,6 +90,10 @@ export default class MyClient extends Client {
     })
     this.loadCommands()
     this.loadComponentHandlers()
+  }
+
+  public changePresence(data: PresenceData): void {
+    this.user?.setPresence(data)
   }
 
   private loadCommands(): void {

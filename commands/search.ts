@@ -24,6 +24,9 @@ const search: MusicBotCommand = {
         index: 0,
       }
       context.active_searches.set(interaction.user.username, search)
+      setTimeout(() => {
+        context.active_searches.delete(interaction.user.username)
+      }, 15 * 60 * 1000)
       const reply: ComponentEmbed = context.factory.componentEmbed(results[0])
 
       interaction.reply({ embeds: [reply.embed], components: [reply.component], ephemeral: true })
