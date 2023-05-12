@@ -1,15 +1,15 @@
 {
   "name": "music-bot",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Music bot for discord",
+  "main": "app.ts",
   "scripts": {
     "dev": "nodemon app.ts",
     "start": "node build/app.js",
     "build": "tsc -b",
     "update:commands": "ts-node ./commands.ts"
   },
-  "author": "",
+  "author": "Olli Varila",
   "license": "ISC",
   "dependencies": {
     "@discordjs/voice": "^0.16.0",
